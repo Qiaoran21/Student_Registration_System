@@ -66,9 +66,9 @@ namespace BITCollegeService
                                                        && x.CourseId == courseId && x.Notes == notes);
 
             //Retrieve Course record.
-            Course course = db.Courses.Where(x => x.CourseId == courseId && x.Notes == notes).FirstOrDefault();
+            Course course = db.Courses.Where(x => x.CourseId == courseId).FirstOrDefault();
             //Retrieve Student record.
-            Student student = db.Students.Where(x => x.StudentId == studentId && x.Notes == notes).FirstOrDefault();
+            Student student = db.Students.Where(x => x.StudentId == studentId).FirstOrDefault();
 
             //Query the allRegistrations query - null records.
             IEnumerable<Registration> nullRecords = db.Registrations.Where(x => x.Grade == null);
@@ -77,19 +77,23 @@ namespace BITCollegeService
                 returnValue = -100;
             }
 
-            //Check to see if course is Mastery course, and get max attempts.
-            CourseType type = BusinessRules.CourseTypeLookup(course.CourseType);
-
-            if (type == CourseType.MASTERY)
+            if (course != null)
             {
-                MasteryCourse masteryCourse = (MasteryCourse)course;
-                int maximumAttempts = masteryCourse.MaximumAttempts;
+                //Check to see if course is Mastery course, and get max attempts.
+                CourseType type = BusinessRules.CourseTypeLookup(course.CourseType);
 
-                //Query the allRegistrations query - not null records.
-                IEnumerable<Registration> notNullRecords = db.Registrations.Where(x => x.Grade != null);
-                if (notNullRecords.Count() > maximumAttempts)
+                if (type == CourseType.MASTERY)
                 {
-                    returnValue = -200;
+                    MasteryCourse masteryCourse;
+                    masteryCourse = (MasteryCourse)course;
+                    int maximumAttempts = masteryCourse.MaximumAttempts;
+
+                    //Query the allRegistrations query - not null records.
+                    IEnumerable<Registration> notNullRecords = db.Registrations.Where(x => x.Grade != null);
+                    if (notNullRecords.Count() > maximumAttempts)
+                    {
+                        returnValue = -200;
+                    }
                 }
             }
             
@@ -131,7 +135,7 @@ namespace BITCollegeService
         /// <returns>newGradePointAverage</returns>
         public double? UpdateGrade(double grade, int registrationId, string notes)
         {
-            Registration registration = db.Registrations.Where(x => x.RegistrationId == registrationId && x.Notes == notes).FirstOrDefault();
+            Registration registration = db.Registrations.Where(x => x.RegistrationId == registrationId).FirstOrDefault();
 
             registration.Grade = grade;
 
